@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale"/>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale-extreme.css"/>
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet"> -->
+
+    <style>
+        *{
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+            font-family: Lato,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+        }
+        body{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container{
+            width: 85%;
+            position: relative;
+        }
+        header{
+            margin: 6px 0;
+            width: 100%;
+            text-align: center;
+            font-size: 25px;
+            color: #212529;
+        }
+        header h1{
+            font-weight: 400;
+        }
+        header i{
+            color: #f39c12;
+            margin-right: 15px;
+        }
+        header span{
+            color: #f39c12;
+        }
+        .add-book{
+            width: 100%;
+        }
+        .add-book form{
+            display: flex;
+            flex-direction: column;
+        }
+        input{
+            border: 1px solid #ced4da;
+            height: 35px;
+            border-radius: 6px;
+            padding: 4px 10px;
+            margin: 10px 0 10px;
+            transform: all .4s;
+            font-size: 20px;
+            color: #7b8a8b;
+            text-align: right;
+        }
+        form input[type="text"]:focus{
+            outline: 0;
+            border-color: #597ea2;
+            box-shadow: 0 0 0 0.2rem rgb(44 62 80 / 25%);
+        }
+        input[type="button"]{
+            background-color: #f39c12;
+            color: #fff;
+            cursor: pointer;
+            font-size: 15px;
+            text-align: center;
+        }
+        form input#search{
+            background-color: lightgreen;
+            color: black;
+        }
+        input[type="button"]:hover{
+            background-color: #d4860b;
+            border-color: #c87f0a;
+        }
+        input#search:hover{
+            background-color: #5cc55c;
+            border-color: #5cc55c;
+        }
+
+        /* search book section styles */
+        .search-book{
+            display: none;
+            width: 100%;
+            flex-direction: column;
+        }
+        .search-book.active{
+            display: flex;
+            position: absolute;
+            top: 25%;
+        }
+        .search-book > *{
+            margin: 7px 0;
+        }
+        
+
+        /* book info styles (table) */
+        .book-added{
+            margin: 15px 0;
+            width: 100%;
+            border-top: 1px solid gray;
+        }
+        .book-added.active{
+            position: absolute;
+            top: 50%;
+        }
+        .book-added table{
+            width: 100%;
+            text-align: center;
+            border-collapse: collapse;
+        }
+        table thead tr{
+            border-bottom: 2px solid gray ;
+        }
+        .book-added table tr{
+            padding: 7px;
+            border-top: 1px solid #dee2e6;
+        }
+        .book-added table tr > *{
+            width: 33.33%;
+            padding: 7px 0;
+        }
+        .book-added table tr span{
+            color: red;
+            font-size: 25px;
+            cursor: pointer;
+            position: relative;
+            top: 5px;
+            opacity: 0;
+            transition: all .4s;
+            visibility: hidden;
+        }
+        .book-added table tr:hover span{
+            opacity: 1;
+            visibility: visible;
+        }
+        table tbody tr:nth-child(odd){
+            background-color: #ecf0f1;
+        }
+
+        /* responsive */
+        @media only screen and (min-width: 800px) {
+            .container{
+                width: 65%;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1><i class="fas fa-book-open"></i>SabzLearn Js <span>Book</span>List</h1>
+    </header>
+    
+    <section class="add-book animate__animated">
+        <form action="javascript:void(0)" spellcheck="false">
+            <label for="title">Title</label>
+            <input type="text" name="title" autocomplete="off">
+            <label for="author">Author</label>
+            <input type="text" name="author" autocomplete="off">
+            <label for="=year">Year</label>
+            <input type="text" name="=year" autocomplete="off">
+            <input type="button" value="Add Book">
+            <input type="button" value="Search Book" id="search">
+        </form>
+    </section>
+
+    <section class="search-book animate__animated">
+        <input type="button" value="Add Book">
+        <input type="search" placeholder="Search books with title, author, year">
+    </section>
+    
+    <section class="book-added">
+        <table>
+            <thead>
+                <tr><th>Title</th><th>Author</th><th>Year</th></tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+
+<script>
+let $,addBookBtn,inputs,tbody,booksArray,newBook
+$ = document
+addBookBtn = $.querySelectorAll("input")[3]
+inputs = $.querySelectorAll("input[type='text']")
+tbody = $.querySelector("table tbody")
+searchBtn = $.querySelector("#search")
+addBookSection = $.querySelector(".add-book")
+searchBookSection = $.querySelector(".search-book")
+showAddBookSectionBtn = $.querySelector(".search-book input:first-child")
+searchBookInput = showAddBookSectionBtn.nextElementSibling
+tableSection = $.querySelector(".book-added")
+
+class BookInfo{
+    constructor(title,author,year){
+        this.title = title
+        this.author = author
+        this.year = year
+        this.date = new Date().toString().substr(0,24)
+        booksArray.push(this)
+    }
+}
+
+function generateBookTemplate (array){
+    if(array){
+        let newBookInfo
+        tbody.innerHTML = ""
+        array.forEach((book,index) => {
+            newBookInfo = $.createElement("tr")
+
+            newBookInfo.innerHTML = `<td contenteditable='true'>${book.title}</td><td contenteditable='true'>${book.author}</td><td contenteditable='true'>${book.year}</td><span>X</span>`
+            newBookInfo.lastElementChild.addEventListener("click",() => {
+                array.splice(index,1)
+                localStorage.setItem("books",JSON.stringify(array))
+                generateBookTemplate(array)
+            })
+            newBookInfo.querySelectorAll('td').forEach((td,i) =>{
+
+                td.addEventListener("blur",(event) => {
+                    switch(i){
+                        case 0:
+                            array[index].title = event.target.textContent
+                            break
+                        case 1:
+                            array[index].author = event.target.textContent
+                            break
+                        case 2:
+                            array[index].year = event.target.textContent
+                            break
+                    }
+                    localStorage.setItem("books",JSON.stringify(array))
+                })
+            })
+
+            newBookInfo.onmouseover = function () {
+                tippy(this,{
+                content: `created in<br /><b style='color:red'>${booksArray[index].date}</b>`,
+                allowHTML : true,
+                animation:"scale-extreme",
+                followCursor:true,
+                followCursor: 'horizontal',
+                // delay: [100,0]
+            })
+            }
+            tbody.append(newBookInfo)
+        })
+    }else{
+        booksArray = []
+    }
+}
+
+function submitBookInfo(){
+    let isEmpty;
+    let newBook
+    for(input of inputs){
+        if(input.value == ""){
+            isEmpty = true
+            break
+        } 
+    }
+    if(isEmpty) alert("please fill out the fields below")
+    else{
+        newBook = new BookInfo(inputs[0].value,inputs[1].value,inputs[2].value)
+        localStorage.setItem("books",JSON.stringify(booksArray))
+        generateBookTemplate(booksArray)
+        for(input of inputs) input.value = ""
+        inputs[0].focus()
+    }
+}
+
+function searchBooks(){
+    let sendArray = []
+    update()
+    newBook.forEach((book,index) =>{
+        if(book.includes(searchBookInput.value)){
+            sendArray.push(booksArray[index])
+        }
+    })
+    if(sendArray == []) return
+    generateBookTemplate(sendArray)
+}
+
+function update(){
+    newBook = []
+    booksArray.forEach(book =>{
+        data = book.title + book.author + book.year
+        newBook.push(data)
+    })
+}
+
+function getBooks (){
+    booksArray = JSON.parse(localStorage.getItem("books"))
+    generateBookTemplate(booksArray)
+}
+
+function hideAddBookSection(){
+    searchBookSection.classList.remove("animate__fadeOut")
+    addBookSection.classList.add("animate__fadeOut")
+    tableSection.classList.add("active")
+    searchBookSection.classList.add("active")
+    update()
+}
+function showAddBookSection(){
+    searchBookSection.classList.add("animate__fadeOut")
+    addBookSection.classList.remove("animate__fadeOut")
+    tableSection.classList.remove("active")
+    searchBookSection.classList.remove("active")
+}
+
+function isRTL(s){           
+    var ltrChars    = 'A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02B8\u0300-\u0590\u0800-\u1FFF'+'\u2C00-\uFB1C\uFDFE-\uFE6F\uFEFD-\uFFFF',
+        rtlChars    = '\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC',
+        rtlDirCheck = new RegExp('^[^'+ltrChars+']*['+rtlChars+']');
+
+    return rtlDirCheck.test(s);
+};
+
+
+inputs.forEach((input,index) => {
+    input.addEventListener("keyup",function(event){
+        if(input.value != ""){
+                if(!isRTL(input.value)){
+                input.style.textAlign = "left"
+            }
+        }else{
+            input.style.textAlign = "right"
+        }
+        if(event.keyCode == 13){
+            if(index == inputs.length -1){
+                submitBookInfo()
+                input.blur()
+            }else{
+                input.blur()
+                inputs[index+1].focus()
+            }
+        }
+    })
+})
+
+addBookBtn.addEventListener("click",submitBookInfo)
+window.addEventListener("load",getBooks)
+searchBtn.addEventListener("click",hideAddBookSection)
+showAddBookSectionBtn.addEventListener("click",showAddBookSection)
+searchBookInput.addEventListener("input",searchBooks)
+
+/* 
+features to add later:
+
+*/
+</script>
+
+</body>
+</html>
